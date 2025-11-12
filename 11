@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>酸奶单词 - 趣味背单词</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6',
+            secondary: '#10B981',
+            accent: '#F59E0B',
+            dark: '#1E293B',
+            light: '#F8FAFC'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .card-shadow {
+        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 8px 10px -6px rgba(59, 130, 246, 0.1);
+      }
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+      
+      /* 为单词卡片添加平滑的过渡效果 */
+      #word-card {
+        transition: opacity 0.2s ease-in-out;
+        will-change: opacity;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.15), 0 8px 10px -6px rgba(59, 130, 246, 0.15);
+      }
+      .text-gradient {
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        background-image: linear-gradient(45deg, #3B82F6, #10B981);
+      }
+      .btn-bounce {
+        transition: transform 0.2s ease;
+      }
+      .btn-bounce:active {
+        transform: scale(0.95);
+      }
+      
+      /* 移动端句号自动换行 */
+      .mobile-break-after-period {
+        /* 默认情况下不做特殊处理 */
+      }
+      
+      @media (max-width: 640px) {
+        .mobile-break-after-period {
+          white-space: pre-wrap;
+          text-align: left; /* 确保文本左对齐 */
+        }
+        
+        /* 在句号后添加换行 */
+        .mobile-break-after-period::after {
+          content: "";
+        }
+        
+        /* 使用JavaScript处理句号后的换行，这里添加CSS辅助 */
+        .mobile-break-after-period span.period-break {
+          display: block;
+        }
+        
+        /* 确保内容元素的多行文本左对齐并增加行间距 */
+        #mixed-sentence, #rap-sentence {
+          text-align: left;
+          word-wrap: break-word;
+          white-space: pre-line; /* 保留换行但不保留多余空格 */
+          line-height: 1.6; /* 增加行间距，使阅读更舒适 */
+        }
+      }
+      /* 确保Font Awesome图标在所有设备上正常显示 */
+      .fa {
+        display: inline-block !important;
+        font-family: 'FontAwesome' !important;
+        font-style: normal !important;
+        font-weight: normal !important;
+        line-height: 1 !important;
+        speak: none;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        /* 确保图标大小在移动端足够清晰 */
+        font-size: inherit !important;
+      }
+      
+      /* 缩小例句、洗脑记忆和Rap记忆部分的喇叭图标 */
+      h3 > button .fa-volume-up {
+        font-size: 0.8em !important;
+        width: 1em;
+        height: 1em;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      /* 设置标题前的彩色竖线 */
+      .example-line {
+        width: 3px;
+        height: 0.9em;
+        background-color: #3B82F6; /* 蓝色 */
+        border-radius: 2px;
+        align-self: center;
+      }
+      
+      .memory-line {
+        width: 3px;
+        height: 0.9em;
+        background-color: #10B981; /* 绿色 */
+        border-radius: 2px;
+        align-self: center;
+      }
+      
+      .rap-line {
+        width: 3px;
+        height: 0.9em;
+        background-color: #F59E0B; /* 黄色 */
+        border-radius: 2px;
+        align-self: center;
+      }
+      
+      /* 移动端图标响应式优化 */
+      @media (max-width: 640px) {
+        .fa {
+          font-size: 1.2em !important;
+        }
+        
+        /* 确保标题前的图标在移动端正确显示 */
+        h3 .fa {
+          margin-right: 0.5rem;
+          width: 1.2em;
+          height: 1.2em;
+          display: flex !important;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        /* 确保喇叭按钮在移动端足够大，易于点击 */
+        button .fa-volume-up {
+          font-size: 1.3em !important;
+          width: 1.5em;
+          height: 1.5em;
+          display: flex !important;
+          align-items: center;
+          justify-content: center;
+        }
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-dark min-h-screen transition-colors duration-300">
+  <!-- 顶部导航已移除 -->
+
+  <!-- 主内容区 -->
+  <main class="container mx-auto px-4 py-8 md:py-16">
+    
+    
+    <!-- 单词卡片 -->
+    <div class="max-w-3xl mx-auto">
+      <div id="word-card" class="bg-white dark:bg-gray-800 rounded-2xl p-6 md:p-8 card-shadow card-hover transition-all duration-500">
+        <!-- 单词和音标 -->
+        <div class="mb-2 word-phonetic-container">
+          <div class="word-container">
+            <h2 id="word" class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white"></h2>
+          </div>
+          <div class="phonetic-container">
+            <span id="phonetic" class="text-gray-500 dark:text-gray-400 italic mr-2"></span>
+            <button onclick="speakWord()" class="text-primary hover:text-primary/80 transition-colors btn-bounce inline-block">
+              <i class="fa fa-volume-up"></i>
+            </button>
+          </div>
+        </div>
+        <style>
+          /* 默认桌面端样式 */
+          .word-phonetic-container {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+          }
+          
+          /* 移动端样式：将音标和喇叭图标移到单词下方 */
+          @media (max-width: 767px) {
+            .word-phonetic-container {
+              flex-direction: column;
+              align-items: flex-start;
+            }
+            .phonetic-container {
+              margin-top: 0.5rem;
+            }
+          }
+        </style>
+        
+        <!-- 单词释义 -->
+        <div class="mb-6">
+          <div id="part-of-speech"></div>
+        </div>
+        
+        <!-- 例句 -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center">
+            <span class="example-line mr-2"></span>例句
+            <button onclick="speakExample()" class="text-primary hover:text-primary/80 transition-colors btn-bounce ml-2">
+              <i class="fa fa-volume-up"></i>
+            </button>
+          </h3>
+          <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl">
+            <p id="example-sentence" class="text-gray-800 dark:text-gray-200 mb-2"></p>
+            <p id="example-translation" class="text-gray-600 dark:text-gray-400 text-sm"></p>
+          </div>
+        </div>
+        
+        <!-- 中英文结合语句 -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center">
+            <span class="memory-line mr-2"></span>洗脑记忆
+            <button onclick="speakMixedSentence()" class="text-secondary hover:text-secondary/80 transition-colors btn-bounce ml-2">
+              <i class="fa fa-volume-up"></i>
+            </button>
+          </h3>
+          <p id="mixed-sentence" class="text-sm text-gray-800 dark:text-gray-200 bg-secondary/5 p-4 rounded-xl"></p>
+        </div>
+        
+        <!-- Rap语句 -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3 flex items-center">
+            <span class="rap-line mr-2"></span>Rap记忆
+            <button onclick="speakRapSentence()" class="text-accent hover:text-accent/80 transition-colors btn-bounce ml-2">
+              <i class="fa fa-volume-up"></i>
+            </button>
+          </h3>
+          <p id="rap-sentence" class="text-sm mobile-break-after-period text-gray-800 dark:text-gray-200 bg-accent/5 p-4 rounded-xl"></p>
+        </div>
+      </div>
+      
+      <!-- 导航按钮 -->
+      <div class="flex justify-between items-center mt-8">
+        <button id="prev-btn" class="bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-6 py-3 rounded-full shadow hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed btn-bounce">
+          <i class="fa fa-arrow-left mr-2"></i>上一个
+        </button>
+        <span id="word-counter" class="text-gray-400 dark:text-gray-500">1/10</span>
+        <button id="next-btn" class="bg-secondary text-white px-6 py-3 rounded-full shadow hover:shadow-md hover:bg-secondary/90 transition-all btn-bounce">
+          下一个<i class="fa fa-arrow-right ml-2"></i>
+        </button>
+      </div>
+    </div>
+  </main>
+  
+  <!-- 信息弹窗 -->
+  <div id="info-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full mx-4 transform transition-all">
+      <div class="flex justify-between items-start mb-4">
+        <h3 class="text-xl font-bold text-gray-800 dark:text-white">使用说明</h3>
+        <button id="close-modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <ul class="space-y-3 text-gray-600 dark:text-gray-300">
+        <li class="flex items-start">
+          <i class="fa fa-volume-up text-primary mt-1 mr-2"></i>
+          <span>点击喇叭图标可以朗读单词和例句</span>
+        </li>
+        <li class="flex items-start">
+          <i class="fa fa-arrow-left text-gray-500 mt-1 mr-2"></i>
+          <i class="fa fa-arrow-right text-gray-500 mt-1 mr-2"></i>
+          <span>使用箭头按钮切换单词</span>
+        </li>
+
+        <li class="flex items-start">
+          <i class="fa fa-star text-accent mt-1 mr-2"></i>
+          <span>通过趣味Rap语句和中英文洗脑内容帮助记忆单词</span>
+        </li>
+      </ul>
+      <button id="got-it-btn" class="mt-6 w-full bg-primary text-white py-3 rounded-lg hover:bg-primary/90 transition-colors btn-bounce">
+        明白了
+      </button>
+    </div>
+  </div>
+  <script>
+    // 移动端句号自动换行功能 - 重写为更直接有效的实现
+    function applyPeriodBreaks() {
+      // 只针对rap-sentence元素处理，确保直接定位到需要换行的元素
+      const rapElement = document.getElementById('rap-sentence');
+      if (!rapElement) return;
+      
+      // 获取元素当前内容
+      let content = rapElement.innerHTML;
+      
+      // 移除所有现有的br标签，避免重复添加
+      content = content.replace(/<br\s*\/?>/gi, '');
+      
+      // 先将原始换行符\n替换为空格，避免双重换行导致行间距过大
+      content = content.replace(/\n/g, ' ');
+      
+      if (window.innerWidth <= 640) {
+        // 移动端处理：在句号和波浪号后添加br标签
+        content = content.replace(/。/g, '。<br>').replace(/～/g, '～<br>');
+      }
+      
+      // 立即应用处理后的内容
+      rapElement.innerHTML = content;
+    }
+    
+    // 优化版：确保所有单词的rap记忆内容都能正确换行
+    const originalUpdateWordCard = updateWordCard;
+    updateWordCard = function(isInitialLoad) {
+      // 先调用原始函数
+      originalUpdateWordCard.call(this, isInitialLoad);
+      
+      // 增加多次延迟调用，确保DOM完全更新后应用换行
+      // 第一次调用（较短延迟）
+      setTimeout(applyPeriodBreaks, 200);
+      // 第二次调用（较长延迟，确保在所有DOM更新后）
+      setTimeout(applyPeriodBreaks, 500);
+    };
+    
+    // 页面加载完成后初始化
+    window.addEventListener('DOMContentLoaded', function() {
+      // 初始化页面
+      updateWordCard(true);
+      setupEventListeners();
+      
+      // 立即应用换行处理
+      applyPeriodBreaks();
+      // 添加延迟调用确保首次加载时内容正确
+      setTimeout(applyPeriodBreaks, 300);
+    });
+    
+    // 保留窗口大小改变时的监听
+    window.addEventListener('resize', function() {
+      setTimeout(applyPeriodBreaks, 100);
+    });
+    
+    // 添加一个简单的点击事件监听器作为备用，但限制调用频率
+    let lastClickTime = 0;
+    const clickDelay = 500; // 500ms内只执行一次
+    document.addEventListener('click', function() {
+      const currentTime = new Date().getTime();
+      if (currentTime - lastClickTime > clickDelay) {
+        applyPeriodBreaks();
+        lastClickTime = currentTime;
+      }
+    });
+    
+    // 检查是否有nextWord和prevWord函数，确保单词切换时也能触发换行
+    if (typeof nextWord === 'function') {
+      const originalNextWord = nextWord;
+      nextWord = function() {
+        originalNextWord.call(this);
+        // 切换到下一个单词后应用换行
+        setTimeout(applyPeriodBreaks, 300);
+      };
+    }
+    
+    if (typeof prevWord === 'function') {
+      const originalPrevWord = prevWord;
+      prevWord = function() {
+        originalPrevWord.call(this);
+        // 切换到上一个单词后应用换行
+        setTimeout(applyPeriodBreaks, 300);
+      };
+    }
+    
+    // 单词数据
+    const vocabularyList = [
+      {
+        word: "keen",
+        phonetic: "/kiːn/",
+        partOfSpeech: "adj. 敏锐的；热心的",
+        example: "The detective has a keen eye for details.",
+        exampleCn: "这位侦探对细节有敏锐的洞察力。",
+        mixed: "我的好朋友对音乐有着<strong class='text-secondary'>keen</strong>的兴趣，耳朵特别<strong class='text-secondary'>keen</strong>，能听出最细微的音调变化。他对帮助别人也总是充满<strong class='text-secondary'>keen</strong>的热情，大家都喜欢他。",
+        rap: "侦探眼睛真够<strong class='text-accent'>keen</strong>，细节全都看得清。热心助人有热情，人人都夸好心情。"
+      },
+      {
+        word: "leisure",
+        phonetic: "/ˈleʒə(r)/",
+        partOfSpeech: "n. 闲暇；空闲",
+        example: "I like to read novels at my leisure.",
+        exampleCn: "我喜欢在闲暇时读小说。",
+        mixed: "忙碌了一周，我终于迎来了宝贵的<strong class='text-secondary'>leisure</strong>时间。这个<strong class='text-secondary'>leisure</strong>的周末下午，我打算好好享受一下<strong class='text-secondary'>leisure</strong>，什么都不想，就晒晒太阳看看书。",
+        rap: "周末时光是<strong class='text-accent'>leisure</strong>，晒太阳来看书行。放下忙碌和忧愁，享受此刻好心情。"
+      },
+      {
+        word: "magnificent",
+        phonetic: "/mæɡˈnɪfɪsnt/",
+        partOfSpeech: "adj. 壮丽的；宏伟的",
+        example: "We saw the magnificent sunrise on the mountain top.",
+        exampleCn: "我们在山顶看到了壮丽的日出。",
+        mixed: "站在山顶，我被眼前<strong class='text-secondary'>magnificent</strong>的景色震撼了，这<strong class='text-secondary'>magnificent</strong>的日出就像一幅油画。我从未见过如此<strong class='text-secondary'>magnificent</strong>的自然奇观。",
+        rap: "山顶日出真<strong class='text-accent'>magnificent</strong>，光芒万丈照云层。此等壮丽好风景，永远记在我心中。"
+      },
+      {
+        word: "moderate",
+        phonetic: "/ˈmɒdərət/",
+        partOfSpeech: "adj. 适度的；中等的",
+        example: "It's important to do moderate exercise regularly.",
+        exampleCn: "定期进行适度的运动很重要。",
+        mixed: "医生说锻炼要<strong class='text-secondary'>moderate</strong>，强度<strong class='text-secondary'>moderate</strong>才能持久。饮食也要<strong class='text-secondary'>moderate</strong>，不能暴饮暴食，保持适度是关键。",
+        rap: "健康生活要<strong class='text-accent'>moderate</strong>，不强不弱刚刚好。饮食锻炼都适度，才是健康好法宝。"
+      },
+      {
+        word: "mysterious",
+        phonetic: "/mɪˈstɪəriəs/",
+        partOfSpeech: "adj. 神秘的；难以理解的",
+        example: "The old castle has a mysterious atmosphere.",
+        exampleCn: "那座古堡有一种神秘的氛围。",
+        mixed: "森林深处有一栋<strong class='text-secondary'>mysterious</strong>的房子，关于它有很多<strong class='text-secondary'>mysterious</strong>的传说。没人知道里面住着谁，这一切都显得太<strong class='text-secondary'>mysterious</strong>了。",
+        rap: "森林老屋太<strong class='text-accent'>mysterious</strong>，传说四起心好奇。重重迷雾遮真相，等待你去解谜题。"
+      },
+      {
+        word: "naive",
+        phonetic: "/naɪˈiːv/",
+        partOfSpeech: "adj. 天真的；幼稚的",
+        example: "The child is naive to believe magic.",
+        exampleCn: "这孩子天真地相信魔法。",
+        mixed: "妹妹总相信童话里的魔法，觉得只要许愿就能实现愿望，真是 <strong class='text-secondary'>naive</strong>。有人说能帮她找到独角兽，她居然信了，这份 <strong class='text-secondary'>naive</strong> 的纯粹既可爱又让人担心。希望她慢慢长大，却也能保留一点这份 <strong class='text-secondary'>naive</strong> 的美好。",
+        rap: "妹妹相信魔法术，<strong class='text-accent'>naive</strong> 模样超萌酷。轻信他人的承诺，天真纯粹藏心处。"
+      },
+      {
+        word: "obscure",
+        phonetic: "/əbˈskjʊə(r)/",
+        partOfSpeech: "adj. 模糊的；晦涩的",
+        example: "The meaning of this poem is obscure.",
+        exampleCn: "这首诗的含义很晦涩。",
+        mixed: "这篇文章的观点非常<strong class='text-secondary'>obscure</strong>，用了很多<strong class='text-secondary'>obscure</strong>的术语，让人读得云里雾里。作者故意把意思弄得这么<strong class='text-secondary'>obscure</strong>，实在难懂。",
+        rap: "文章含义太<strong class='text-accent'>obscure</strong>，术语堆砌像天书。读了好几遍也不懂，真是让人好辛苦。"
+      },
+      {
+        word: "optimistic",
+        phonetic: "/ˌɒptɪˈmɪstɪk/",
+        partOfSpeech: "adj. 乐观的",
+        example: "He's optimistic about his future.",
+        exampleCn: "他对未来很乐观。",
+        mixed: "即这次英语竞赛她没拿到奖项，但他 <strong class='text-secondary'>optimistic</strong>，说下次一定能进步。面对困难他从不抱怨，始终保持 <strong class='text-secondary'>optimistic</strong> 的心态。这份 <strong class='text-secondary'>optimistic</strong> 的劲头，让他总能快速振作起来。",
+        rap: "面竞赛失利不低落，<strong class='text-accent'>optimistic</strong> 心态阔。相信下次能逆袭，积极向上不退缩。"
+      },
+      {
+        word: "particular",
+        phonetic: "/pəˈtɪkjələ(r)/",
+        partOfSpeech: "adj. 特定的；特别的",
+        example: "I'm looking for a particular book on history.",
+        exampleCn: "我在找一本特定的历史书。",
+        mixed: "我对咖啡有<strong class='text-secondary'>particular</strong>的要求，只喝一个<strong class='text-secondary'>particular</strong>的品种。在这个<strong class='text-secondary'>particular</strong>的问题上，我绝不肯将就。",
+        rap: "我对咖啡很<strong class='text-accent'>particular</strong>，特定产地和烘焙。我的要求不将就，这点绝对不马虎。"
+      },
+      {
+        word: "peculiar",
+        phonetic: "/pɪˈkjuːliə(r)/",
+        partOfSpeech: "adj. 特殊的；独特的",
+        example: "This plant has a peculiar shape.",
+        exampleCn: "这种植物形状独特。",
+        mixed: "老家村口有棵老槐树，它的枝干长得很 <strong class='text-secondary'>peculiar</strong>，扭着奇怪的弧度。每到春天，它还会开出 <strong class='text-secondary'>peculiar</strong> 的白色小花，香味和其他槐树都不一样。这棵 <strong class='text-secondary'>peculiar</strong> 的老槐树，是村里独有的风景。",
+        rap: "老槐树枝干奇特，<strong class='text-accent'>peculiar</strong> 模样惹眼热。独有小花香不同，特殊风景村中卧。"
+      }
+    ];
+    
+    // 当前单词索引
+    let currentIndex = 0;
+    
+    // DOM元素
+    const wordElement = document.getElementById('word');
+    const phoneticElement = document.getElementById('phonetic');
+    const partOfSpeechElement = document.getElementById('part-of-speech');
+    const exampleElement = document.getElementById('example-sentence');
+    const mixedElement = document.getElementById('mixed-sentence');
+    const rapElement = document.getElementById('rap-sentence');
+    const counterElement = document.getElementById('word-counter');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const infoBtn = document.getElementById('info-btn');
+    const infoModal = document.getElementById('info-modal');
+    const closeModal = document.getElementById('close-modal');
+    const gotItBtn = document.getElementById('got-it-btn');
+    const wordCard = document.getElementById('word-card');
+    
+    // 初始化逻辑已移至DOMContentLoaded事件监听器
+    
+    /* 更新单词卡片内容 - 优化版，减少闪烁 */
+    function updateWordCard(isInitialLoad = false) {
+      const wordData = vocabularyList[currentIndex];
+      
+      // 为了减少闪烁，我们不使用完全透明，而是使用更平滑的过渡效果
+      if (!isInitialLoad) {
+        // 只使用透明度变化，避免缩放带来的抖动，使用更短的过渡时间
+        wordCard.classList.add('transition-opacity', 'duration-200', 'opacity-80');
+      }
+      
+      // 不使用setTimeout延迟更新内容，这样可以减少闪烁
+      wordElement.textContent = wordData.word;
+      phoneticElement.textContent = wordData.phonetic;
+      // 将每个词性行包装在单独的span标签中，并为每个span添加圆角样式
+      const partsOfSpeech = wordData.partOfSpeech.split('\n').filter(part => part.trim());
+      partOfSpeechElement.innerHTML = partsOfSpeech.map(part => 
+        `<span class="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium mb-1">${part}</span>`
+      ).join('');
+      exampleElement.textContent = wordData.example;
+      // 更新例句中文翻译，移除括号
+      const exampleTranslation = document.getElementById('example-translation');
+      exampleTranslation.textContent = wordData.exampleCn.replace(/[()]/g, '');
+      mixedElement.innerHTML = wordData.mixed;
+      rapElement.innerHTML = wordData.rap;
+      counterElement.textContent = `${currentIndex + 1}/${vocabularyList.length}`;
+      
+      // 更新按钮状态
+      prevBtn.disabled = currentIndex === 0;
+      
+      // 检查是否是最后一个单词
+      if (currentIndex === vocabularyList.length - 1) {
+        nextBtn.innerHTML = '返回<i class="fa fa-arrow-right ml-2"></i>';
+      } else {
+        nextBtn.innerHTML = '下一个<i class="fa fa-arrow-right ml-2"></i>';
+      }
+      
+      // 使用setTimeout来移除动画类，创建平滑的过渡效果
+      if (!isInitialLoad) {
+        setTimeout(() => {
+          wordCard.classList.remove('opacity-70');
+        }, 50); // 较短的延迟，让过渡更自然
+      }
+    }
+    
+    // 朗读单词
+    function speakWord() {
+      const word = vocabularyList[currentIndex].word;
+      speakText(word);
+    }
+    
+    // 朗读例句
+    function speakExample() {
+      const example = vocabularyList[currentIndex].example;
+      speakText(example);
+    }
+    
+    // 朗读洗脑记忆内容
+    function speakMixedSentence() {
+      const mixedSentence = document.getElementById('mixed-sentence').innerText;
+      // 优化中文语音效果，使用更好的参数配置
+      speakText(mixedSentence, 'zh-CN', true);
+    }
+    
+    // 朗读Rap记忆内容
+    function speakRapSentence() {
+      const rapSentence = document.getElementById('rap-sentence').innerText;
+      // 优化中文语音效果，使用更好的参数配置
+      speakText(rapSentence, 'zh-CN', true);
+    }
+    
+    // 文本朗读功能 - 增强版
+    function speakText(text, lang = 'en-US', optimizeVoice = false) {
+      // 停止任何正在进行的朗读
+      window.speechSynthesis.cancel();
+      
+      // 创建新的语音实例
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang;
+      utterance.rate = 0.9; // 稍微放慢速度
+      
+      // 针对中文语音进行优化
+      if (lang === 'zh-CN' && optimizeVoice) {
+        // 尝试选择更好的语音合成器
+        const voices = window.speechSynthesis.getVoices();
+        // 优先选择带有'Google'、'Microsoft'等高质量语音
+        const preferredVoices = voices.filter(voice => 
+          (voice.lang === 'zh-CN' || voice.lang.startsWith('zh-')) &&
+          (voice.name.includes('Google') || voice.name.includes('Microsoft') || 
+           voice.name.includes('Ivy') || voice.name.includes('Zira') || 
+           voice.localService === false) // 通常云服务的语音质量更好
+        );
+        
+        if (preferredVoices.length > 0) {
+          utterance.voice = preferredVoices[0];
+        }
+        
+        // 调整语音参数以获得更自然的效果
+        utterance.pitch = 1.0; // 略微提升音调，使声音更活泼
+        utterance.volume = 1.0; // 确保音量适中
+        utterance.rate = 0.95; // 稍微调整语速，使中文朗读更自然
+      }
+      
+      // 播放语音
+      window.speechSynthesis.speak(utterance);
+    }
+    
+    // 预加载可用的语音列表
+    // 在页面加载时调用一次，确保在需要时可以获取到完整的语音列表
+    document.addEventListener('DOMContentLoaded', function() {
+      // 触发语音列表加载
+      window.speechSynthesis.getVoices();
+    });
+    
+    // 切换到上一个单词
+    function prevWord() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateWordCard(false); // 传入false表示是切换单词，添加动画效果
+      }
+    }
+    
+    // 切换到下一个单词或返回第一个单词
+    function nextWord() {
+      if (currentIndex < vocabularyList.length - 1) {
+        currentIndex++;
+      } else {
+        // 如果是最后一个单词，返回第一个
+        currentIndex = 0;
+      }
+      updateWordCard(false); // 传入false表示是切换单词，添加动画效果
+    }
+    
+    // 显示信息弹窗
+    function showInfoModal() {
+      infoModal.classList.remove('hidden');
+      // 添加动画效果
+      const modalContent = infoModal.querySelector('div');
+      modalContent.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100', 'transition-all', 'duration-300');
+      }, 10);
+    }
+    
+    // 隐藏信息弹窗
+    function hideInfoModal() {
+      const modalContent = infoModal.querySelector('div');
+      modalContent.classList.remove('scale-100', 'opacity-100');
+      modalContent.classList.add('scale-95', 'opacity-0', 'transition-all', 'duration-300');
+      
+      setTimeout(() => {
+        infoModal.classList.add('hidden');
+      }, 300);
+    }
+    
+    // 设置事件监听器
+    function setupEventListeners() {
+      prevBtn.addEventListener('click', prevWord);
+      nextBtn.addEventListener('click', nextWord);
+      infoBtn.addEventListener('click', showInfoModal);
+      closeModal.addEventListener('click', hideInfoModal);
+      gotItBtn.addEventListener('click', hideInfoModal);
+      
+      // 键盘导航
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') prevWord();
+        if (e.key === 'ArrowRight') nextWord();
+      });
+    }
+    
+    // 初始化应用
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
