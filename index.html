@@ -66,6 +66,14 @@
         /* 默认情况下不做特殊处理 */
       }
       
+      /* 为桌面端和移动端都增加洗脑记忆和Rap记忆的行间距 */
+      #mixed-sentence, #rap-sentence {
+        line-height: 1.8; /* 增加行间距，使每行之间的间距更高一些 */
+        text-align: left;
+        word-wrap: break-word;
+        white-space: pre-line; /* 保留换行但不保留多余空格 */
+      }
+      
       @media (max-width: 640px) {
         .mobile-break-after-period {
           white-space: pre-wrap;
@@ -80,14 +88,6 @@
         /* 使用JavaScript处理句号后的换行，这里添加CSS辅助 */
         .mobile-break-after-period span.period-break {
           display: block;
-        }
-        
-        /* 确保内容元素的多行文本左对齐并增加行间距 */
-        #mixed-sentence, #rap-sentence {
-          text-align: left;
-          word-wrap: break-word;
-          white-space: pre-line; /* 保留换行但不保留多余空格 */
-          line-height: 1.6; /* 增加行间距，使阅读更舒适 */
         }
       }
       /* 确保Font Awesome图标在所有设备上正常显示 */
@@ -388,8 +388,8 @@
         partOfSpeech: "adj. 敏锐的；热心的",
         example: "The detective has a keen eye for details.",
         exampleCn: "这位侦探对细节有敏锐的洞察力。",
-        mixed: "我的好朋友对音乐有着<strong class='text-secondary'>keen</strong>的兴趣，耳朵特别<strong class='text-secondary'>keen</strong>，能听出最细微的音调变化。他对帮助别人也总是充满<strong class='text-secondary'>keen</strong>的热情，大家都喜欢他。",
-        rap: "侦探眼睛真够<strong class='text-accent'>keen</strong>，细节全都看得清。热心助人有热情，人人都夸好心情。"
+        mixed: "我的侦探朋友有着<strong class='text-secondary'>keen</strong>洞察力，并且火眼火眼金睛特别<strong class='text-secondary'>keen</strong>，能分辨出最细微的变化。他还喜欢帮助别人对人总是很<strong class='text-secondary'>keen</strong>，大家都喜欢他。",
+        rap: "侦探眼睛真够<strong class='text-accent'>keen</strong>，细节全都看得清。乐于助人有热情，人人见他好心情。"
       },
       {
         word: "leisure",
