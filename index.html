@@ -38,6 +38,12 @@
       .card-hover {
         transition: all 0.3s ease;
       }
+      
+      /* 为单词卡片添加平滑的过渡效果 */
+      #word-card {
+        transition: opacity 0.2s ease-in-out;
+        will-change: opacity;
+      }
       .card-hover:hover {
         transform: translateY(-5px);
         box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.15), 0 8px 10px -6px rgba(59, 130, 246, 0.15);
@@ -489,47 +495,48 @@
     
     // 初始化逻辑已移至DOMContentLoaded事件监听器
     
-    // 更新单词卡片内容
+    /* 更新单词卡片内容 - 优化版，减少闪烁 */
     function updateWordCard(isInitialLoad = false) {
       const wordData = vocabularyList[currentIndex];
       
-      // 只有在非初始化加载时才添加动画效果
+      // 为了减少闪烁，我们不使用完全透明，而是使用更平滑的过渡效果
       if (!isInitialLoad) {
-        // 添加动画效果
-        wordCard.classList.add('opacity-0', 'scale-95');
+        // 只使用透明度变化，避免缩放带来的抖动，使用更短的过渡时间
+        wordCard.classList.add('transition-opacity', 'duration-200', 'opacity-80');
       }
       
-      setTimeout(() => {
-        wordElement.textContent = wordData.word;
-        phoneticElement.textContent = wordData.phonetic;
-        // 将每个词性行包装在单独的span标签中，并为每个span添加圆角样式
-        const partsOfSpeech = wordData.partOfSpeech.split('\n').filter(part => part.trim());
-        partOfSpeechElement.innerHTML = partsOfSpeech.map(part => 
-          `<span class="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium mb-1">${part}</span>`
-        ).join('');
-        exampleElement.textContent = wordData.example;
-        // 更新例句中文翻译，移除括号
-        const exampleTranslation = document.getElementById('example-translation');
-        exampleTranslation.textContent = wordData.exampleCn.replace(/[()]/g, '');
-        mixedElement.innerHTML = wordData.mixed;
-        rapElement.innerHTML = wordData.rap;
-        counterElement.textContent = `${currentIndex + 1}/${vocabularyList.length}`;
-        
-        // 更新按钮状态
-        prevBtn.disabled = currentIndex === 0;
-        
-        // 检查是否是最后一个单词
-        if (currentIndex === vocabularyList.length - 1) {
-          nextBtn.innerHTML = '返回<i class="fa fa-arrow-right ml-2"></i>';
-        } else {
-          nextBtn.innerHTML = '下一个<i class="fa fa-arrow-right ml-2"></i>';
-        }
-        
-        // 移除动画类以显示元素
-        if (!isInitialLoad) {
-          wordCard.classList.remove('opacity-0', 'scale-95');
-        }
-      }, isInitialLoad ? 0 : 200);
+      // 不使用setTimeout延迟更新内容，这样可以减少闪烁
+      wordElement.textContent = wordData.word;
+      phoneticElement.textContent = wordData.phonetic;
+      // 将每个词性行包装在单独的span标签中，并为每个span添加圆角样式
+      const partsOfSpeech = wordData.partOfSpeech.split('\n').filter(part => part.trim());
+      partOfSpeechElement.innerHTML = partsOfSpeech.map(part => 
+        `<span class="inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium mb-1">${part}</span>`
+      ).join('');
+      exampleElement.textContent = wordData.example;
+      // 更新例句中文翻译，移除括号
+      const exampleTranslation = document.getElementById('example-translation');
+      exampleTranslation.textContent = wordData.exampleCn.replace(/[()]/g, '');
+      mixedElement.innerHTML = wordData.mixed;
+      rapElement.innerHTML = wordData.rap;
+      counterElement.textContent = `${currentIndex + 1}/${vocabularyList.length}`;
+      
+      // 更新按钮状态
+      prevBtn.disabled = currentIndex === 0;
+      
+      // 检查是否是最后一个单词
+      if (currentIndex === vocabularyList.length - 1) {
+        nextBtn.innerHTML = '返回<i class="fa fa-arrow-right ml-2"></i>';
+      } else {
+        nextBtn.innerHTML = '下一个<i class="fa fa-arrow-right ml-2"></i>';
+      }
+      
+      // 使用setTimeout来移除动画类，创建平滑的过渡效果
+      if (!isInitialLoad) {
+        setTimeout(() => {
+          wordCard.classList.remove('opacity-70');
+        }, 50); // 较短的延迟，让过渡更自然
+      }
     }
     
     // 朗读单词
